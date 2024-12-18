@@ -1,17 +1,59 @@
-import {ComponentProps, FC} from "react";
-import {Card} from "@mui/material";
+import {ComponentProps, FC, useEffect, useState} from "react";
+import {Button, Card, FormControl, FormLabel, TextField, Typography} from "@mui/material";
+import styles from "./auth.module.scss"
+import {useAppDispatch} from "../../redux/hooks.ts";
+import {signUp} from "../../redux/user/userSlice.ts";
 
 type AuthPropsType = ComponentProps<"div">
 
 const Auth: FC<AuthPropsType> = ({}) => {
-     return (
-         <div>
-              <Card variant="outlined">
+    const [username, setUsername] = useState<string>("")
+    const dispatch = useAppDispatch()
 
-              </Card>
+    useEffect(() => {
 
-         </div>
-     )
+    })
+
+    const handlers = {
+        singIn: () => {
+            dispatch(signUp(username))
+
+        }
+    }
+
+    return (
+        <div>
+            <Card variant="outlined" className={styles.container}>
+                    <Typography
+                        component="h1"
+                        variant="h4"
+                        sx={{width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)'}}
+                    >
+                        Sign in
+                    </Typography>
+                    <FormControl>
+                        <FormLabel>Username</FormLabel>
+                        <TextField
+                            autoFocus
+                            required
+                            fullWidth
+                            variant="outlined"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                    </FormControl>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    onClick={handlers.singIn}
+                >
+                    Sign in
+                </Button>
+            </Card>
+
+        </div>
+    )
 }
 
 export default Auth;
