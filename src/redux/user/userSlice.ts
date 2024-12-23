@@ -1,6 +1,8 @@
 import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import axios from "axios";
-import {GET_LOBBIES, SIGN_UP} from "../../api/requests/config.ts";
+import {SIGN_UP} from "../../api/requests/config.ts";
+import {SingInAnswer, User} from "./types.ts";
+import {createApi} from "@reduxjs/toolkit/query";
 
 interface UserState {
     name: string
@@ -9,9 +11,6 @@ interface UserState {
     error: string | null
 }
 
-type SingInAnswer = {
-    token: string
-}
 
 const initialState: UserState = {
     name: "",
@@ -19,6 +18,12 @@ const initialState: UserState = {
     status: "",
     error: null
 }
+
+const socket = io('wss://localhost:3001');
+
+const messageAPI = createApi({
+
+})
 
 export const signUp = createAsyncThunk<SingInAnswer, string>("@@user/signUp", async (username, thunkApi) => {
     const config = {
@@ -31,6 +36,11 @@ export const signUp = createAsyncThunk<SingInAnswer, string>("@@user/signUp", as
     }
     try {
         const response = await axios.post<SingInAnswer>(SIGN_UP, data, config)
+        const user ={
+            name: username,
+            token: response.data.token
+        }
+        localStorage.setItem("user", JSON.stringify(user))
         return response.data;
 
     } catch (error) {
@@ -47,6 +57,13 @@ export const userSlice = createSlice({
     reducers: {
         setName: (state, action: PayloadAction<string>) => {
             state.name = action.payload
+        },
+        setToken: (state, action: PayloadAction<string>) => {
+            state.token = action.payload
+        },
+        setUser: (state, action: PayloadAction<User>) => {
+            state.name= action.payload.name
+            state.token = action.payload.token
         }
     },
     extraReducers: (builder) => {
@@ -70,6 +87,6 @@ export const userSlice = createSlice({
     }
 })
 
-export const {setName} = userSlice.actions;
+export const {setName, setToken, setUser} = userSlice.actions;
 
 export default userSlice.reducer
