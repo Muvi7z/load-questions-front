@@ -19,12 +19,6 @@ const initialState: UserState = {
     error: null
 }
 
-const socket = io('wss://localhost:3001');
-
-const messageAPI = createApi({
-
-})
-
 export const signUp = createAsyncThunk<SingInAnswer, string>("@@user/signUp", async (username, thunkApi) => {
     const config = {
         headers: {

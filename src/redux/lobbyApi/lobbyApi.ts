@@ -1,11 +1,10 @@
 import {io} from "socket.io-client";
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query";
-import {fetchModule} from "vite";
 
 const socket = io('ws://localhost:10000');
 
 const messageApi = createApi({
-    reducerPath: "lobbyApi",
+    reducerPath: "api",
     baseUrl: fetchBaseQuery({baseUrl: "/ws"}),
     endpoints: (builder) => ({
         getMessage: builder.query({
