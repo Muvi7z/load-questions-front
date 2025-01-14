@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import {LobbyType} from "./types.ts";
 import axios from "axios";
 import {GET_LOBBIES} from "../../api/requests/config.ts";
@@ -58,6 +58,6 @@ export const lobbiesSlice = createSlice({
 
 })
 
-export const {} = lobbiesSlice.actions;
+// export const {} = lobbiesSlice.actions
 
 export default lobbiesSlice.reducer

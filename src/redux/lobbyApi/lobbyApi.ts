@@ -1,6 +1,7 @@
-import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {io} from "socket.io-client";
 import {CREATE_LOBBY} from "../../api/requests/config.ts";
+import {Lobby} from "../lobbies/types.ts";
 
 //const socket = io('ws://localhost:10000');
 
@@ -8,50 +9,77 @@ export interface Message {
     userID: string
 }
 
+export interface SendMessage {
+    type: string,
+    data: {
+        userId: string,
+    },
+}
+
 export enum LobbyEvents {
-    SEND_MESSAGE = 'SEND_MESSAGE',
-    RECEIVE_MESSAGE = 'RECEIVE_MESSAGE',
     JOIN_LOBBY = 'joinLobby',
     CREATE_LOBBY = 'createLobby',
     LEFT_LOBBY = 'leftLobby',
 }
+let socket: WebSocket
+
+function getSocket() {
+    if(!socket) {
+        socket = new WebSocket("ws://localhost:10000/ws");
+    }
+    return socket;
+}
 
 export const lobbyApi = createApi({
-    baseQuery: fetchBaseQuery({baseUrl: "/ws"}),
+    baseQuery: fetchBaseQuery({baseUrl: "/"}),
     endpoints: (builder) => ({
-        getMessages: builder.query<Message, void>({
-            query: () => '',
+        sendMessage: builder.mutation<string, SendMessage>({
+            queryFn: (message: SendMessage) => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    ws.send(JSON.stringify(message))
+                    resolve({data: "message"})
+                })
+            },
+        }),
+        getMessage: builder.query<Lobby, void>({
+            query: () => '/ws',
             async onCacheEntryAdded(_, {updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
-                // const ws = new WebSocket();
+
+                const ws = getSocket()
                 await cacheDataLoaded
 
-
                 try {
-
-                    const socket = io("ws://localhost:8080/ws",)
-
-                    socket.on("connect", () => {
-                        ///socket.emit("")
-                    })
-
-                    socket.on(LobbyEvents.RECEIVE_MESSAGE, (message: Message) => {
+                    // when data is received from the socket connection to the server,
+                    // if it is a message and for the appropriate channel,
+                    // update our query result with the received message
+                    const listener = (event: MessageEvent) => {
+                        console.log(event)
+                        const data = JSON.parse(event.data)
+                        console.log("listener", data)
                         updateCachedData((draft) => {
-                            draft = message;
-                        });
+                            draft=data
+                        })
+                    }
 
-                    })
+                    ws.addEventListener('message', listener)
 
+                    // const socket = io("ws://localhost:10000/ws",)
+                    // console.log("join socket")
+                    // socket.on("connect", () => {
+                    //     ///socket.emit("")
+                    //     socket.emit(LobbyEvents.JOIN_LOBBY);
+                    //     console.log("joinLobby");
+                    // })
                     //
-                    // const listener = (event: MessageEvent) => {
-                    //     const data = JSON.parse(event.data);
-                    //
+                    // socket.on(LobbyEvents.RECEIVE_MESSAGE, (message: Message) => {
                     //     updateCachedData((draft) => {
-                    //         draft.userID = data.userID;
+                    //         draft = message;
                     //     });
                     //
-                    // }
+                    // })
 
-                    // ws.addEventListener("message", listener);
                 }
                 catch {
                     // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
@@ -59,9 +87,11 @@ export const lobbyApi = createApi({
                 }
 
                 await cacheEntryRemoved
+
+                ws.close()
             }
         }),
     })
 })
 
-export const {useGetMessagesQuery} = lobbyApi
+export const {useGetMessageQuery, useSendMessageMutation} = lobbyApi

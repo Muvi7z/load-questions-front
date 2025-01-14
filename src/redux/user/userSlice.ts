@@ -2,7 +2,6 @@ import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import axios from "axios";
 import {SIGN_UP} from "../../api/requests/config.ts";
 import {SingInAnswer, User} from "./types.ts";
-import {createApi} from "@reduxjs/toolkit/query";
 
 interface UserState {
     name: string
