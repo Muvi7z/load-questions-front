@@ -20,6 +20,7 @@ const Auth: FC<AuthPropsType> = ({}) => {
             const retrievedUser = JSON.parse(userStr);
             dispatch(setUser(retrievedUser))
             navigate("/")
+            console.log("redirect", userStr)
         }
     }, [])
 

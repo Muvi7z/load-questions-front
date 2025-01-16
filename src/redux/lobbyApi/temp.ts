@@ -3,6 +3,8 @@ import {io} from "socket.io-client";
 import {CREATE_LOBBY} from "../../api/requests/config.ts";
 import {Lobby} from "../lobbies/types.ts";
 
+//const socket = io('ws://localhost:10000');
+
 export interface Message {
     userID: string
 }
@@ -30,7 +32,7 @@ function getSocket() {
 
 export const lobbyApi = createApi({
     reducerPath: 'websocketApi',
-    baseQuery: fetchBaseQuery({baseUrl: "http://localhost:10000/"}),
+    baseQuery: fetchBaseQuery({baseUrl: "/"}),
     endpoints: (builder) => ({
         sendMessage: builder.mutation<string, CreateLobbyRes>({
             queryFn: (message: CreateLobbyRes) => {
@@ -52,25 +54,25 @@ export const lobbyApi = createApi({
                 })
             },
         }),
-        getMessages: builder.query<Lobby[], void>({
-            // query: () => '',
-            queryFn: () => ({data: []}),
-            async onCacheEntryAdded(arg, lifecycleApi) {
+        getMessages: builder.query<Lobby, void>({
+            query: () => '/getMessage',
+            async onCacheEntryAdded(arg, { cacheDataLoaded, cacheEntryRemoved, updateCachedData }) {
                 console.log("cacheAdd", arg)
                 const ws = getSocket()
 
                 try {
-                    await lifecycleApi.cacheDataLoaded
+                    await cacheDataLoaded
 
                     // when data is received from the socket connection to the server,
                     // if it is a message and for the appropriate channel,
                     // update our query result with the received message
                     console.log("onmessage", arg)
                     ws.onmessage = (event: MessageEvent) => {
-                        const data: Lobby = JSON.parse(event.data)
+                        console.log(event)
+                        const data = JSON.parse(event.data)
                         console.log("listener", data)
-                        lifecycleApi.updateCachedData((draft) => {
-                            draft.push(data)
+                        updateCachedData((draft) => {
+                            draft=data
                         })
                     }
 
@@ -90,13 +92,12 @@ export const lobbyApi = createApi({
                     // })
 
                 }
-                catch (err) {
-                    console.log('err', err);
+                catch {
                     // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
                     // in which case `cacheDataLoaded` will throw
                 }
 
-                await lifecycleApi.cacheEntryRemoved
+                await cacheEntryRemoved
 
                 ws.close()
             }

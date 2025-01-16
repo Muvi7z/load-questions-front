@@ -3,24 +3,40 @@ import {useAppSelector} from "../../redux/hooks.ts";
 import {useNavigate} from "react-router-dom";
 import {Box, Button, Tab, Tabs} from "@mui/material";
 import styles from "./home.module.scss"
-import {LobbyEvents, useGetMessageQuery, useSendMessageMutation} from "../../redux/lobbyApi/lobbyApi.ts";
+import {
+    LobbyEvents,
+    useCreateLobbyMutation,
+    useGetMessagesQuery,
+} from "../../redux/lobbyApi/lobbyApi.ts";
 
 type HomePropsType = ComponentProps<"div">
 
 const Home: FC<HomePropsType> = ({}) => {
-    const {token} = useAppSelector(state => state.user)
+    const {token, status} = useAppSelector(state => state.user)
     const navigate = useNavigate();
     const [tab, setTab] = useState("create")
-    const {data, isFetching, isLoading} = useGetMessageQuery()
-    const [sendMessage, ] = useSendMessageMutation()
+    const {data, isFetching, isLoading} = useGetMessagesQuery()
+   const [createLobby, ] = useCreateLobbyMutation()
 
-    console.log("data", data)
+    console.log("data", data, status)
 
     useEffect(() => {
-        if(token === "") {
+        if(token === "" && status !== "loading") {
             navigate("/auth")
         }
     }, [])
+
+    const onCreateLobby = () => {
+        createLobby({
+            type:LobbyEvents.CREATE_LOBBY,
+            data: {
+                userId: token
+            }
+        })
+    }
+
+    if (isLoading) return <div>Загрузка сообщений...</div>;
+    if (isFetching) return <div>Ошибка загрузки сообщений</div>;
 
     return (
         <div className={styles.container}>
@@ -35,12 +51,7 @@ const Home: FC<HomePropsType> = ({}) => {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    onClick={() => sendMessage({
-                        type:LobbyEvents.CREATE_LOBBY,
-                        data: {
-                            userId: token
-                        }
-                    })}
+                    onClick={() => onCreateLobby()}
                 >
                     Создать лобби
                 </Button>

@@ -3,14 +3,14 @@ import userReducer from "./user/userSlice.ts";
 import lobbiesReducer from "./lobbies/lobbiesSlice.ts";
 import {lobbyApi} from "./lobbyApi/lobbyApi.ts";
 
-const rootReducer = combineReducers({
-    user: userReducer,
-    lobbies:lobbiesReducer,
-    [lobbyApi.reducerPath]: lobbyApi.reducer,
-});
+
 
 export const store = configureStore({
-    reducer: rootReducer,
+    reducer: {
+        user: userReducer,
+        lobbies:lobbiesReducer,
+        [lobbyApi.reducerPath]: lobbyApi.reducer,
+    },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(lobbyApi.middleware),
 })
 
