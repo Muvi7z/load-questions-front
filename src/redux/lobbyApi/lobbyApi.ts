@@ -52,9 +52,9 @@ export const lobbyApi = createApi({
                 })
             },
         }),
-        getMessages: builder.query<Lobby[], void>({
+        getMessages: builder.query<Lobby, void>({
             // query: () => '',
-            queryFn: () => ({data: []}),
+            queryFn: () => ({data: {}}),
             async onCacheEntryAdded(arg, lifecycleApi) {
                 console.log("cacheAdd", arg)
                 const ws = getSocket()
@@ -70,7 +70,10 @@ export const lobbyApi = createApi({
                         const data: Lobby = JSON.parse(event.data)
                         console.log("listener", data)
                         lifecycleApi.updateCachedData((draft) => {
-                            draft.push(data)
+                            draft.id=data.id
+                            draft.owner=data.owner
+                            draft.settings=data.settings
+                            draft.users=data.users
                         })
                     }
 
