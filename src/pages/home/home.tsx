@@ -15,10 +15,10 @@ const Home: FC<HomePropsType> = ({}) => {
     const {token, status} = useAppSelector(state => state.user)
     const navigate = useNavigate();
     const [tab, setTab] = useState("create")
-    const {data, isFetching, isLoading, isSuccess} = useGetMessagesQuery()
+    const {data:message, isFetching, isLoading, isSuccess} = useGetMessagesQuery()
    const [createLobby, ] = useCreateLobbyMutation()
 
-    console.log("data", data, status)
+    console.log("data", message, status)
 
     useEffect(() => {
         if(token === "" && status !== "loading") {
@@ -27,11 +27,11 @@ const Home: FC<HomePropsType> = ({}) => {
     }, [])
 
     useEffect(() => {
-        console.log("ss", data?.id && isSuccess)
-        if(data?.id && isSuccess) {
-            navigate(`lobby/${data.id}`)
+        console.log("ss", message?.data?.id && isSuccess)
+        if(message?.data?.id && isSuccess) {
+            navigate(`lobby/${message?.data?.id}`)
         }
-    }, [data, isSuccess]);
+    }, [message, isSuccess]);
 
     const onCreateLobby = async () => {
         await createLobby({

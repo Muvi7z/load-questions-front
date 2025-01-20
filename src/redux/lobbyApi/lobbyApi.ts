@@ -3,15 +3,23 @@ import {io} from "socket.io-client";
 import {CREATE_LOBBY} from "../../api/requests/config.ts";
 import {Lobby} from "../lobbies/types.ts";
 
-export interface Message {
-    userID: string
-}
-
 export interface CreateLobbyRes {
     type: string,
     data: {
         userId: string,
     },
+}
+
+export interface Message {
+    type: string,
+    sendBy:string
+    data: Lobby,
+}
+
+export interface MessageDTO {
+    type: string,
+    sendBy:string
+    data: any,
 }
 
 export enum LobbyEvents {
@@ -52,7 +60,7 @@ export const lobbyApi = createApi({
                 })
             },
         }),
-        getMessages: builder.query<Lobby, void>({
+        getMessages: builder.query<Message, void>({
             // query: () => '',
             queryFn: () => ({data: {}}),
             async onCacheEntryAdded(arg, lifecycleApi) {
@@ -67,13 +75,19 @@ export const lobbyApi = createApi({
                     // update our query result with the received message
                     console.log("onmessage", arg)
                     ws.onmessage = (event: MessageEvent) => {
-                        const data: Lobby = JSON.parse(event.data)
-                        console.log("listener", data)
+                        const res: MessageDTO = JSON.parse(event.data)
+                        console.log("listener", res)
                         lifecycleApi.updateCachedData((draft) => {
-                            draft.id=data.id
-                            draft.owner=data.owner
-                            draft.settings=data.settings
-                            draft.users=data.users
+                            switch (res.type) {
+                                case LobbyEvents.CREATE_LOBBY:
+                                    draft.type=res.type;
+                                    draft.sendBy=res.sendBy;
+                                    draft.data=res.data
+                                    break;
+                                case LobbyEvents.JOIN_LOBBY:
+                                    draft.data.users.push(res.data?.user)
+                                    break;
+                            }
                         })
                     }
 
