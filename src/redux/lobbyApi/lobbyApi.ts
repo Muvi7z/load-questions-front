@@ -10,6 +10,14 @@ export interface CreateLobbyRes {
     },
 }
 
+export interface JoinLobbyDTO {
+    type: string,
+    data: {
+        userId: string,
+        lobbyId: string
+    },
+}
+
 export interface Message {
     type: string,
     sendBy:string
@@ -45,8 +53,10 @@ export const lobbyApi = createApi({
                 const ws = getSocket()
 
                 return new Promise((resolve) => {
-                    ws.send(JSON.stringify(message))
-                    resolve({data: "message"})
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify(message))
+                        resolve({data: "message"})
+                    }
                 })
             },
         }),
@@ -57,6 +67,24 @@ export const lobbyApi = createApi({
                 return new Promise((resolve) => {
                     ws.send(JSON.stringify(message))
                     resolve({data: "message"})
+                })
+            },
+        }),
+        joinLobby: builder.mutation<string, JoinLobbyDTO>({
+            queryFn: (message: JoinLobbyDTO) => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    console.log("ws.readyState", ws, message)
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify(message))
+                        resolve({data: "message"})
+                    } else {
+                        ws.addEventListener("open", () => {
+                            ws.send(JSON.stringify(message))
+                            resolve({data: "message"})
+                        })
+                    }
                 })
             },
         }),
@@ -75,6 +103,9 @@ export const lobbyApi = createApi({
                     // update our query result with the received message
                     console.log("onmessage", arg)
                     ws.onmessage = (event: MessageEvent) => {
+                        if (event?.data?.code) {
+                            console.error('Error in WebSocket handler:', event?.data?.code);
+                        }
                         const res: MessageDTO = JSON.parse(event.data)
                         console.log("listener", res)
                         lifecycleApi.updateCachedData((draft) => {
@@ -121,4 +152,4 @@ export const lobbyApi = createApi({
     })
 })
 
-export const {useGetMessagesQuery, useCreateLobbyMutation} = lobbyApi
+export const {useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation} = lobbyApi
