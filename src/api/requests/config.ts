@@ -6,3 +6,4 @@ export const CREATE_LOBBY = BASE_URL + "/lobbies"
 
 ///USER///
 export const SIGN_UP = BASE_URL + "/signUp"
+export const GET_USER = BASE_URL + "/user"

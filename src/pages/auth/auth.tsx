@@ -33,7 +33,7 @@ const Auth: FC<AuthPropsType> = ({}) => {
     }
 
     return (
-        <div>
+        <div className={styles.wrapper}>
             <Card variant="outlined" className={styles.container}>
                     <Typography
                         component="h1"

@@ -1,6 +1,12 @@
 .container {
   height: 100%;
 }
-.create_lobby{
-
+.createLobby{
+  margin-top: 20px;
+}
+.joinLobby{
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }

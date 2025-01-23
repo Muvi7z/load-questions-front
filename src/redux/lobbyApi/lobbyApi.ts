@@ -116,7 +116,9 @@ export const lobbyApi = createApi({
                                     draft.data=res.data
                                     break;
                                 case LobbyEvents.JOIN_LOBBY:
-                                    draft.data.users.push(res.data?.user)
+                                    draft.type=res.type;
+                                    draft.sendBy=res.sendBy;
+                                    draft.data=res.data
                                     break;
                             }
                         })
