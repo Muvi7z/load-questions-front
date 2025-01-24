@@ -41,7 +41,7 @@ const Home: FC<HomePropsType> = ({}) => {
         <div className={styles.container}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{
-
+                    userSelect:"none"
                 }} aria-label="basic tabs example">
                     <Tab label="Создать лобби" value="create"/>
                     <Tab label="Присоединится в лобби" value={"join"}/>
