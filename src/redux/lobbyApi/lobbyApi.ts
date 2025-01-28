@@ -1,34 +1,10 @@
 import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {io} from "socket.io-client";
 import {CREATE_LOBBY} from "../../api/requests/config.ts";
-import {Lobby} from "../lobbies/types.ts";
+import {Lobby, SettingsLobby} from "../lobbies/types.ts";
+import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO} from "./types.ts";
 
-export interface CreateLobbyRes {
-    type: string,
-    data: {
-        userId: string,
-    },
-}
 
-export interface JoinLobbyDTO {
-    type: string,
-    data: {
-        userId: string,
-        lobbyId: string
-    },
-}
-
-export interface Message {
-    type: string,
-    sendBy:string
-    data: Lobby,
-}
-
-export interface MessageDTO {
-    type: string,
-    sendBy:string
-    data: any,
-}
 
 export enum LobbyEvents {
     JOIN_LOBBY = 'joinLobby',
@@ -85,6 +61,34 @@ export const lobbyApi = createApi({
                             resolve({data: "message"})
                         })
                     }
+                })
+            },
+        }),
+        changeSettings: builder.mutation<string, SettingsLobby>({
+            queryFn: (message: JoinLobbyDTO) => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    console.log("ws.readyState", ws, message)
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify(message))
+                        resolve({data: "message"})
+                    } else {
+                        ws.addEventListener("open", () => {
+                            ws.send(JSON.stringify(message))
+                            resolve({data: "message"})
+                        })
+                    }
+                })
+            },
+        }),
+        startSession: builder.mutation<string, CreateLobbyRes>({
+            queryFn: (message: CreateLobbyRes) => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    ws.send(JSON.stringify(message))
+                    resolve({data: "message"})
                 })
             },
         }),
@@ -154,4 +158,4 @@ export const lobbyApi = createApi({
     })
 })
 
-export const {useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation} = lobbyApi
+export const {useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation, useChangeSettingsMutation} = lobbyApi

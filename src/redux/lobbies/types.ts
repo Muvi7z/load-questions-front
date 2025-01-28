@@ -5,7 +5,7 @@ export type LobbyType = {
 }
 
 export type SettingsLobby = {
-    leaders: UserDTO
+    leaders: string[]
     time: number
     sessionCount: number
     roundCount: number

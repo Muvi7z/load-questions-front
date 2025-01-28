@@ -4,9 +4,10 @@ import {useNavigate} from "react-router-dom";
 import {Box, Button, Tab, Tabs, TextField} from "@mui/material";
 import styles from "./home.module.scss"
 import {
+    JoinLobbyDTO,
     LobbyEvents,
     useCreateLobbyMutation,
-    useGetMessagesQuery,
+    useGetMessagesQuery, useJoinLobbyMutation,
 } from "../../redux/lobbyApi/lobbyApi.ts";
 
 type HomePropsType = ComponentProps<"div">
@@ -17,6 +18,7 @@ const Home: FC<HomePropsType> = ({}) => {
     const [tab, setTab] = useState("create")
     const {data: message, isSuccess} = useGetMessagesQuery()
     const [createLobby,] = useCreateLobbyMutation()
+    const [joinLobby, {isLoading: lobbyIsLoading}] = useJoinLobbyMutation()
     const [lobbyId, setLobbyId] = useState("")
 
     console.log("data", message, status)
@@ -35,6 +37,18 @@ const Home: FC<HomePropsType> = ({}) => {
             }
         })
     }
+
+    const onJoinLobby = () => {
+        const dto: JoinLobbyDTO = {
+            type: LobbyEvents.JOIN_LOBBY,
+            data: {
+                lobbyId: lobbyId,
+                userId: token
+            }
+        }
+        joinLobby(dto)
+    }
+
 
 
     return (
@@ -64,7 +78,7 @@ const Home: FC<HomePropsType> = ({}) => {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    onClick={() => onCreateLobby()}
+                    onClick={() => onJoinLobby()}
                 >
                     Присоединится в лобби
                 </Button>

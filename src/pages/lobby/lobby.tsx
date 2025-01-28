@@ -1,10 +1,13 @@
-import {ComponentProps, FC, useEffect, useState} from "react";
+import React, {ComponentProps, FC, useEffect, useState} from "react";
 import {JoinLobbyDTO, LobbyEvents, useGetMessagesQuery, useJoinLobbyMutation} from "../../redux/lobbyApi/lobbyApi.ts";
 import styles from "./lobby.module.scss"
 import {UserDTO} from "../../redux/user/types.ts";
 import {useParams} from "react-router-dom";
 import {useAppSelector} from "../../redux/hooks.ts";
 import {Box, Button, createTheme, dividerClasses, styled, Tab, Tabs, ThemeProvider, Typography} from "@mui/material";
+import SettingsLobby from "../../components/SettingsLobby/SettingsLobby.tsx";
+import Icon from "@mdi/react";
+import {mdiCrown} from "@mdi/js";
 
 type LobbyPropsType = ComponentProps<"div">
 
@@ -55,10 +58,18 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
             <div className={styles.list}>
                 {message?.data?.users?.map((item: UserDTO) => {
                     return <div className={styles.list_item}>
-                        <div className={styles.avatar}>{item.username[0]}</div>
+                        <div className={styles.avatar}>
+                            <div className={styles.crown}><Icon path={mdiCrown}
+                                                                title="User Profile"
+                                                                size={0.80}
+                                                                horizontal
+                                                                color="#eaca18"
+                            /></div>
+                            {item.username[0]}</div>
                         <div>
+
                             <div className={styles.username}>{item.username}</div>
-                            <div className={styles.role}>{message.data?.owner === item?.uuid ? "Хост" : "Игрок"}</div>
+                            <div className={styles.role}>{message.data?.settings?.leaders?.uuid === item?.uuid ? "Ведущий" : "Игрок"}</div>
                         </div>
                     </div>
                 })}
@@ -67,13 +78,11 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
                 <ThemeProvider theme={whiteTheme}>
                 <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                         <Tabs value={tab} sx={{userSelect:"none"}} onChange={(_, value) => setTab(value)} aria-label="basic tabs example">
-                            <Tab label="Игра" value={"game"}/>
-                            <Tab label="Настройки" value={"settings"}/>
+                            <Tab sx={{fontSize:"18px"}} label="Игра" value={"game"}/>
+                            <Tab sx={{fontSize:"18px"}} label="Настройки" value={"settings"}/>
                         </Tabs>
                     </Box>
-                </ThemeProvider>
                 {tab === "game" && <div className={styles.game}>
-                    {console.log("dsa",message?.data?.rounds)}
                     { message?.data?.rounds?.map((round, id) => {
                         console.log("round", round)
                         return <>
@@ -88,6 +97,10 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
                     })}
                 </div>
                 }
+                {tab === "settings" && <div>
+                    <SettingsLobby />
+                </div>}
+                </ThemeProvider>
             </div>
             <div className={styles.control}>
                 <Button className={styles.btn}  variant={"contained"} size={"large"}>Пригласить</Button>
