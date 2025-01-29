@@ -1,8 +1,5 @@
 import {UserDTO} from "../user/types.ts";
 
-export type LobbyType = {
-
-}
 
 export type SettingsLobby = {
     leaders: string[]
@@ -35,4 +32,6 @@ export interface Lobby {
     users: UserDTO[]
     rounds: Round[]
     settings: SettingsLobby
+    currentRound: string
+    currentSession: string
 }

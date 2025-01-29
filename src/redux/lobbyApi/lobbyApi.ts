@@ -1,8 +1,7 @@
 import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {io} from "socket.io-client";
-import {CREATE_LOBBY} from "../../api/requests/config.ts";
 import {Lobby, SettingsLobby} from "../lobbies/types.ts";
-import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO} from "./types.ts";
+import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
 
 
 
@@ -10,6 +9,8 @@ export enum LobbyEvents {
     JOIN_LOBBY = 'joinLobby',
     CREATE_LOBBY = 'createLobby',
     LEFT_LOBBY = 'leftLobby',
+    CHANGE_SETTINGS= "changeSettings",
+    START_SESSION= "startSession"
 }
 let socket: WebSocket
 
@@ -65,25 +66,20 @@ export const lobbyApi = createApi({
             },
         }),
         changeSettings: builder.mutation<string, SettingsLobby>({
-            queryFn: (message: JoinLobbyDTO) => {
+            queryFn: (message: SettingsLobby) => {
                 const ws = getSocket()
-
+                const msg: MessageDTO = {
+                    type: LobbyEvents.CHANGE_SETTINGS,
+                    data: message,
+                }
                 return new Promise((resolve) => {
-                    console.log("ws.readyState", ws, message)
-                    if (ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify(message))
-                        resolve({data: "message"})
-                    } else {
-                        ws.addEventListener("open", () => {
-                            ws.send(JSON.stringify(message))
-                            resolve({data: "message"})
-                        })
-                    }
+                    ws.send(JSON.stringify(msg))
+                    resolve({data: "message"})
                 })
             },
         }),
-        startSession: builder.mutation<string, CreateLobbyRes>({
-            queryFn: (message: CreateLobbyRes) => {
+        startSession: builder.mutation<string, SessionStart>({
+            queryFn: (message: SessionStart) => {
                 const ws = getSocket()
 
                 return new Promise((resolve) => {
@@ -116,14 +112,21 @@ export const lobbyApi = createApi({
                             switch (res.type) {
                                 case LobbyEvents.CREATE_LOBBY:
                                     draft.type=res.type;
-                                    draft.sendBy=res.sendBy;
+                                    draft.sendBy=res?.sendBy?res?.sendBy:"";
                                     draft.data=res.data
                                     break;
                                 case LobbyEvents.JOIN_LOBBY:
                                     draft.type=res.type;
-                                    draft.sendBy=res.sendBy;
+                                    draft.sendBy=res?.sendBy?res?.sendBy:"";
                                     draft.data=res.data
                                     break;
+                                case LobbyEvents.LEFT_LOBBY:
+                                    draft.data.users?.filter((user) => user.uuid != res?.data?.user?.uuid)
+                                    break;
+                                case LobbyEvents.CHANGE_SETTINGS:
+                                    draft.data.settings = res.data
+                                    break;
+
                             }
                         })
                     }
@@ -158,4 +161,4 @@ export const lobbyApi = createApi({
     })
 })
 
-export const {useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation, useChangeSettingsMutation} = lobbyApi
+export const {useStartSessionMutation, useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation, useChangeSettingsMutation} = lobbyApi

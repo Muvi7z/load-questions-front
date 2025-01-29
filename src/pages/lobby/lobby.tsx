@@ -1,5 +1,11 @@
 import React, {ComponentProps, FC, useEffect, useState} from "react";
-import {JoinLobbyDTO, LobbyEvents, useGetMessagesQuery, useJoinLobbyMutation} from "../../redux/lobbyApi/lobbyApi.ts";
+import {
+    JoinLobbyDTO,
+    LobbyEvents,
+    useGetMessagesQuery,
+    useJoinLobbyMutation,
+    useStartSessionMutation
+} from "../../redux/lobbyApi/lobbyApi.ts";
 import styles from "./lobby.module.scss"
 import {UserDTO} from "../../redux/user/types.ts";
 import {useParams} from "react-router-dom";
@@ -14,6 +20,8 @@ type LobbyPropsType = ComponentProps<"div">
 const Lobby: FC<LobbyPropsType> = ({}) => {
     const {data: message, error, isFetching, isLoading, isSuccess} = useGetMessagesQuery()
     const [joinLobby, {isLoading: lobbyIsLoading}] = useJoinLobbyMutation()
+    const [startSession, {}] = useStartSessionMutation()
+
     const {token} = useAppSelector(state => state.user)
     const params = useParams()
     const [tab, setTab] = useState("game")
@@ -46,10 +54,18 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
     }, [])
 
     const onStartGame = () => {
-        if (message?.data?.users && message?.data?.users?.length>0) {
-
-        } else  {
-
+        if (message?.data?.users && message?.data?.users?.length > 0) {
+            const leader = message.data.settings.leaders?.at(0)
+            if(leader) {
+                startSession({
+                    type:LobbyEvents.START_SESSION,
+                    data: {
+                        leader:leader
+                    }
+                })
+            }
+        } else {
+            console.log("error")
         }
     }
 
@@ -59,52 +75,56 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
                 {message?.data?.users?.map((item: UserDTO) => {
                     return <div className={styles.list_item}>
                         <div className={styles.avatar}>
-                            <div className={styles.crown}><Icon path={mdiCrown}
-                                                                title="User Profile"
-                                                                size={0.80}
-                                                                horizontal
-                                                                color="#eaca18"
-                            /></div>
+                            {message.data?.owner === item?.uuid && <div className={styles.crown}><Icon path={mdiCrown}
+                                                                                                       title="User Profile"
+                                                                                                       size={0.80}
+                                                                                                       horizontal
+                                                                                                       color="#eaca18"
+                            /></div>}
                             {item.username[0]}</div>
                         <div>
 
                             <div className={styles.username}>{item.username}</div>
-                            <div className={styles.role}>{message.data?.settings?.leaders?.uuid === item?.uuid ? "Ведущий" : "Игрок"}</div>
+                            <div
+                                className={styles.role}>{message.data?.settings?.leaders?.at(0) === item?.uuid ? "Ведущий" : "Игрок"}</div>
                         </div>
                     </div>
                 })}
             </div>
             <div className={styles.settings}>
                 <ThemeProvider theme={whiteTheme}>
-                <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
-                        <Tabs value={tab} sx={{userSelect:"none"}} onChange={(_, value) => setTab(value)} aria-label="basic tabs example">
-                            <Tab sx={{fontSize:"18px"}} label="Игра" value={"game"}/>
-                            <Tab sx={{fontSize:"18px"}} label="Настройки" value={"settings"}/>
+                    <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
+                        <Tabs value={tab} sx={{userSelect: "none"}} onChange={(_, value) => setTab(value)}
+                              aria-label="basic tabs example">
+                            <Tab sx={{fontSize: "18px"}} label="Игра" value={"game"}/>
+                            <Tab sx={{fontSize: "18px"}} label="Настройки" value={"settings"}/>
                         </Tabs>
                     </Box>
-                {tab === "game" && <div className={styles.game}>
-                    { message?.data?.rounds?.map((round, id) => {
-                        console.log("round", round)
-                        return <>
-                            <div className={styles.header}>
-                                <Typography variant="h5">Раунд {id + 1}</Typography>
-                                <div className={styles.countSession}>{message?.data?.settings?.sessionCount}/{round?.sessions?.length?round?.sessions?.length:0}</div>
-                            </div>
-                            {round?.sessions && round?.sessions?.length >0 ? <div>
+                    {tab === "game" && <div className={styles.game}>
+                        {message?.data?.rounds?.map((round, id) => {
+                            console.log("round", round)
+                            return <>
+                                <div className={styles.header}>
+                                    <Typography variant="h5">Раунд {id + 1}</Typography>
+                                    <div
+                                        className={styles.countSession}>{message?.data?.settings?.sessionCount}/{round?.sessions?.length ? round?.sessions?.length : 0}</div>
+                                </div>
+                                {round?.sessions && round?.sessions?.length > 0 ? <div>
 
-                            </div> : <div>Сессии еще не сыграны</div>}
-                        </>
-                    })}
-                </div>
-                }
-                {tab === "settings" && <div>
-                    <SettingsLobby />
-                </div>}
+                                </div> : <div>Сессии еще не сыграны</div>}
+                            </>
+                        })}
+                    </div>
+                    }
+                    {tab === "settings" && <div>
+                        <SettingsLobby/>
+                    </div>}
                 </ThemeProvider>
             </div>
             <div className={styles.control}>
-                <Button className={styles.btn}  variant={"contained"} size={"large"}>Пригласить</Button>
-                <Button className={styles.btn} onClick={() => onStartGame()} sx={{minWidth:"150px"}} variant={"contained"} size={"large"}>Играть</Button>
+                <Button className={styles.btn} variant={"contained"} size={"large"}>Пригласить</Button>
+                <Button className={styles.btn} onClick={() => onStartGame()} sx={{minWidth: "150px"}}
+                        variant={"contained"} size={"large"}>Играть</Button>
             </div>
         </div>
     )

@@ -7,16 +7,19 @@ export interface CreateLobbyRes {
     },
 }
 
+export interface SessionStart {
+    type: string,
+    data: {
+        leader: string,
+    },
+}
+
 export interface JoinLobbyDTO {
     type: string,
     data: {
         userId: string,
         lobbyId: string
     },
-}
-
-export interface Settings{
-    type: string,
 }
 
 export interface Message {
@@ -27,6 +30,6 @@ export interface Message {
 
 export interface MessageDTO {
     type: string,
-    sendBy:string
+    sendBy?:string
     data: any,
 }
