@@ -2,6 +2,7 @@ import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/re
 import {io} from "socket.io-client";
 import {Lobby, SettingsLobby} from "../lobbies/types.ts";
 import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
+import {setSession} from "../session/sessionSlice.ts";
 
 
 
@@ -126,7 +127,9 @@ export const lobbyApi = createApi({
                                 case LobbyEvents.CHANGE_SETTINGS:
                                     draft.data.settings = res.data
                                     break;
-
+                                case LobbyEvents.START_SESSION:
+                                    lifecycleApi.dispatch(setSession(res.data?.session))
+                                    break;
                             }
                         })
                     }

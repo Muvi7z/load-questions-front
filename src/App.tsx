@@ -8,6 +8,7 @@ import {useAppDispatch, useAppSelector} from "./redux/hooks.ts";
 import {setUser} from "./redux/user/userSlice.ts";
 import {getUser} from "./api/requests/user.ts";
 import {createTheme, ThemeProvider} from "@mui/material";
+import Session from "./pages/session/session.tsx";
 
 function App() {
     const {token, status} = useAppSelector(state => state.user)
@@ -49,6 +50,7 @@ function App() {
              <Route path="/" element={<Home />} />
              <Route path="/auth" element={<Auth />} />
              <Route path="/lobby/:lobbyId" element={<Lobby />} />
+             <Route path="/session/:sessionId" element={<Session />} />
          </Routes>
      </ThemeProvider>
     </>

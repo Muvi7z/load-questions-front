@@ -8,7 +8,7 @@ import {
 } from "../../redux/lobbyApi/lobbyApi.ts";
 import styles from "./lobby.module.scss"
 import {UserDTO} from "../../redux/user/types.ts";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useAppSelector} from "../../redux/hooks.ts";
 import {Box, Button, createTheme, dividerClasses, styled, Tab, Tabs, ThemeProvider, Typography} from "@mui/material";
 import SettingsLobby from "../../components/SettingsLobby/SettingsLobby.tsx";
@@ -23,6 +23,10 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
     const [startSession, {}] = useStartSessionMutation()
 
     const {token} = useAppSelector(state => state.user)
+    const {session} = useAppSelector(state => state.session)
+
+    const navigate = useNavigate();
+    const [startGame, setStartGame] = useState(false)
     const params = useParams()
     const [tab, setTab] = useState("game")
 
@@ -32,7 +36,6 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
         },
     });
 
-    console.log(":sss", lobbyIsLoading)
     useEffect(() => {
         console.log("reconnect")
         if (params?.lobbyId && message?.data?.id !== params?.lobbyId) {
@@ -53,16 +56,23 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
 
     }, [])
 
+    useEffect(() => {
+            console.log("session", session)
+        if ( session) {
+            navigate(`/session/${session.id}`)
+        }
+    }, [ session]);
+
     const onStartGame = () => {
         if (message?.data?.users && message?.data?.users?.length > 0) {
             const leader = message.data.settings.leaders?.at(0)
-            if(leader) {
+            if (leader) {
                 startSession({
-                    type:LobbyEvents.START_SESSION,
+                    type: LobbyEvents.START_SESSION,
                     data: {
-                        leader:leader
+                        leader: leader
                     }
-                })
+                }).then((data) => setStartGame(true))
             }
         } else {
             console.log("error")
