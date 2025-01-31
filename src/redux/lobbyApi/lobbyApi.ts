@@ -1,7 +1,7 @@
 import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import {io} from "socket.io-client";
 import {Lobby, SettingsLobby} from "../lobbies/types.ts";
-import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
+import {CreateLobbyRes, GameStartDTO, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
 import {setSession} from "../session/sessionSlice.ts";
 
 
@@ -11,7 +11,9 @@ export enum LobbyEvents {
     CREATE_LOBBY = 'createLobby',
     LEFT_LOBBY = 'leftLobby',
     CHANGE_SETTINGS= "changeSettings",
-    START_SESSION= "startSession"
+    START_SESSION= "startSession",
+    START_GAME= "startGame",
+    JOIN_GAME= "joinGame",
 }
 let socket: WebSocket
 
@@ -81,6 +83,28 @@ export const lobbyApi = createApi({
         }),
         startSession: builder.mutation<string, SessionStart>({
             queryFn: (message: SessionStart) => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    ws.send(JSON.stringify(message))
+                    resolve({data: "message"})
+                })
+            },
+        }),
+        startGame: builder.mutation<string, void>({
+            queryFn: () => {
+                const ws = getSocket()
+
+                return new Promise((resolve) => {
+                    ws.send(JSON.stringify({
+                        type: LobbyEvents.START_GAME,
+                    }))
+                    resolve({data: "message"})
+                })
+            },
+        }),
+        joinGame: builder.mutation<string, MessageDTO>({
+            queryFn: (message: MessageDTO) => {
                 const ws = getSocket()
 
                 return new Promise((resolve) => {
@@ -164,4 +188,12 @@ export const lobbyApi = createApi({
     })
 })
 
-export const {useStartSessionMutation, useGetMessagesQuery, useCreateLobbyMutation, useJoinLobbyMutation, useChangeSettingsMutation} = lobbyApi
+export const {
+    useStartSessionMutation,
+    useGetMessagesQuery,
+    useCreateLobbyMutation,
+    useJoinLobbyMutation,
+    useChangeSettingsMutation,
+    useStartGameMutation,
+    useJoinGameMutation,
+} = lobbyApi

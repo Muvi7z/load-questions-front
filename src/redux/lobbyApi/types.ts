@@ -14,6 +14,10 @@ export interface SessionStart {
     },
 }
 
+export interface GameStartDTO {
+    type: string,
+}
+
 export interface JoinLobbyDTO {
     type: string,
     data: {
@@ -31,5 +35,5 @@ export interface Message {
 export interface MessageDTO {
     type: string,
     sendBy?:string
-    data: any,
+    data?: any,
 }
