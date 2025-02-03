@@ -16,55 +16,56 @@ const Session = () => {
     const [sendMessage,] = useSendMessageMutation()
 
     const {token} = useAppSelector(state => state.user)
-    const {session} = useAppSelector(state => state.session)
+    const {session, timeGame} = useAppSelector(state => state.session)
 
     const [answer, setAnswer] = useState("")
     const [timer, setTimer] = useState<number>(0)
     const [timerStart, setTimerStart] = useState<number>(3)
     const params = useParams()
 
-    console.log("message", message)
-
     useEffect(() => {
-
-    }, [message]);
-
-    useEffect(() => {
-        let intervalStart:NodeJS.Timeout
+        let intervalStart: NodeJS.Timeout
         console.log("session", message)
-        if (message?.data?.settings) {
-            switch (session?.status) {
-                case "wait": {
-                        setTimer(message.data.settings.time)
-                    const intervalStart = setInterval(() => {
 
-                        setTimerStart((prev, prop) => {
-                            console.log(prev)
-                            if (prev - 1 <= 0) {
+        if (message?.data?.settings) {
+            setTimer(message.data.settings.time)
+                if (session?.status === "wait") {
+                    intervalStart = setInterval(() => {
+                        setTimerStart((prev) => {
+                            if (prev-1 <=0) {
                                 clearInterval(intervalStart)
-                                if (message?.data?.settings){
-                                    startGame()
-                                    startTimer()
-                                }
+
                             }
                             return prev - 1
+
                         });
 
                     }, 1000);
-                    break;
                 }
-                case "start":{
-                    setTimer(message.data.settings.time)
-                    startTimer()
-                    break;
-                }
-                default:
-                    break;
-            }
+        }
 
-        } else {
-            console.log("session recon", params?.lobbyId, token)
-            if(params?.lobbyId && token) {
+        return () => {
+            console.log("close")
+            clearInterval(intervalStart);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (message?.data?.settings) {
+            console.log("session?.status",session?.status)
+            if (session?.status === "start") {
+                console.log("start time session")
+                setTimer(timeGame)
+                startTimer()
+            }
+        }
+
+
+    }, [session]);
+
+    useEffect(() => {
+        if (!(message?.data?.settings)) {
+            if (params?.lobbyId && token) {
                 sendMessage({
                     type: LobbyEvents.JOIN_GAME,
                     sendBy: token,
@@ -74,34 +75,32 @@ const Session = () => {
                     }
                 })
             }
-
         }
-        // const interval = setInterval(() => {
-        //     setTimer((prev, prop) => {
-        //         console.log(prev)
-        //         if(prev-1 <=0) {
-        //             clearInterval(interval)
-        //         }
-        //         return prev-1
-        //     });
-        //
-        // }, 1000);
-
-        return () => {
-            clearInterval(intervalStart);
-        };
     }, [token]);
+
+    useEffect(() => {
+        if (timerStart <=0) {
+            console.log("start", timerStart)
+            if (session?.status === "wait") {
+                if (message?.data?.settings) {
+                    console.log("start time switch")
+                    startGame()
+                    startTimer()
+                }
+            }
+        }
+    }, [timerStart]);
 
     function startTimer() {
 
         const interval = setInterval(() => {
             setTimer((prev, prop) => {
-                console.log(prev)
+                // console.log(prev)
                 if (prev - 1 <= 0) {
                     console.log(":end game")
                     clearInterval(interval)
                 }
-                return prev - 1
+                    return prev - 1
             });
 
         }, 1000);
@@ -111,7 +110,7 @@ const Session = () => {
 
     return (
         <div>
-            <div className={styles.timer}>{timerStart === 0 ? "GO" : timerStart}</div>
+            {session?.status === "wait" && <div className={styles.timer}>{timerStart == 0 ? "GO" : timerStart}</div>}
             <div className={styles.timer}>{timer}</div>
             <div>
                 <TextField id="outlined-basic"

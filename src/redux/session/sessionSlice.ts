@@ -15,13 +15,19 @@ const initialState: SessionState = {
     error: null
 }
 
+interface SetSessionPayloadType {
+    session: Session | null
+    timeGame: number
+}
+
 export const sessionSlice = createSlice({
     name: "@@session",
     initialState,
     reducers: {
-        setSession: (state: SessionState, action: PayloadAction<Session>) => {
+        setSession: (state: SessionState, action: PayloadAction<SetSessionPayloadType>) => {
             console.log(action.payload, "action.payload")
-            state.session = action.payload
+            state.session = action.payload?.session
+            state.timeGame = action.payload?.timeGame
         }
     },
 })

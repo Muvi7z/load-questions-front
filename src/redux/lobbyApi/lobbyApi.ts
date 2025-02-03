@@ -148,11 +148,17 @@ export const lobbyApi = createApi({
                                     draft.data.settings = res.data
                                     break;
                                 case LobbyEvents.START_SESSION:
-                                    lifecycleApi.dispatch(setSession(res.data?.session))
+                                    lifecycleApi.dispatch(setSession({
+                                        session: res.data?.session,
+                                        timeGame: 0,
+                                    }))
                                     break;
                                 case LobbyEvents.JOIN_GAME:
                                     draft.data = res.data?.lobby
-                                    lifecycleApi.dispatch(setSession(res.data?.session))
+                                    lifecycleApi.dispatch(setSession({
+                                        session: res.data?.session,
+                                        timeGame: res.data?.timeGame,
+                                    }))
                                     break;
                             }
                         })
