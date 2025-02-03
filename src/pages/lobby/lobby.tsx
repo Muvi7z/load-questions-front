@@ -57,9 +57,8 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
     }, [])
 
     useEffect(() => {
-            console.log("session", session)
         if ( session) {
-            navigate(`/session/${session.id}`)
+            navigate(`/session/${message?.data?.id}/${session.id}`)
         }
     }, [ session]);
 

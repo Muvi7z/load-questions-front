@@ -75,7 +75,7 @@ export const userSlice = createSlice({
             .addCase(signUp.rejected, (state, action) => {
                 console.log("action.payload", action.payload)
                 state.status = "rejected";
-                state.error = action.payload
+                state.error = action.payload?.error
             })
     }
 })

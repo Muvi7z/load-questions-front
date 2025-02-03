@@ -2,13 +2,15 @@ import {LobbyType, Session} from "../lobbies/types.ts";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface SessionState {
-    session: Session | null;
+    session: Session | null
+    timeGame: number
     status: string,
     error: string | null
 }
 
 const initialState: SessionState = {
     session: null,
+    timeGame: 0,
     status: "idle",
     error: null
 }

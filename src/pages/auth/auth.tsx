@@ -1,7 +1,7 @@
 import {ComponentProps, FC, useEffect, useState} from "react";
 import {Button, Card, FormControl, FormLabel, TextField, Typography} from "@mui/material";
 import styles from "./auth.module.scss"
-import {useAppDispatch} from "../../redux/hooks.ts";
+import {useAppDispatch, useAppSelector} from "../../redux/hooks.ts";
 import {setName, setUser, signUp} from "../../redux/user/userSlice.ts";
 import {useNavigate} from "react-router-dom";
 
@@ -11,7 +11,8 @@ const Auth: FC<AuthPropsType> = ({}) => {
     const [username, setUsername] = useState<string>("")
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
-    const [errorMessage, setErrorMessage] = useState("")
+    const {token, error} = useAppSelector((state) => state.user)
+    const [ errorMessage, setErrorMessage] = useState("")
 
 
     useEffect(() => {
@@ -24,11 +25,17 @@ const Auth: FC<AuthPropsType> = ({}) => {
         }
     }, [])
 
+    useEffect(() => {
+        if(token) {
+            navigate("/")
+        }
+    }, [token]);
+
     const handlers = {
         singIn: () => {
             dispatch(signUp(username))
             dispatch(setName(username))
-            navigate("/")
+            //navigate("/")
         }
     }
 
@@ -56,7 +63,7 @@ const Auth: FC<AuthPropsType> = ({}) => {
                 <Typography
                     sx={{width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)'}}
                 >
-                    {errorMessage}
+                    {}
                 </Typography>
                 <Button
                     type="submit"

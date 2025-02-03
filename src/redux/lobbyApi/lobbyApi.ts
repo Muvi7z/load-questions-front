@@ -1,7 +1,6 @@
-import {BaseQueryArg, createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
-import {io} from "socket.io-client";
-import {Lobby, SettingsLobby} from "../lobbies/types.ts";
-import {CreateLobbyRes, GameStartDTO, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
+import { createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
+import { SettingsLobby} from "../lobbies/types.ts";
+import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
 import {setSession} from "../session/sessionSlice.ts";
 
 
@@ -18,6 +17,7 @@ export enum LobbyEvents {
 let socket: WebSocket
 
 function getSocket() {
+    console.log("socket",socket)
     if(!socket) {
         socket = new WebSocket("ws://localhost:10000/ws");
     }
@@ -28,18 +28,6 @@ export const lobbyApi = createApi({
     reducerPath: 'websocketApi',
     baseQuery: fetchBaseQuery({baseUrl: "http://localhost:10000/"}),
     endpoints: (builder) => ({
-        sendMessage: builder.mutation<string, CreateLobbyRes>({
-            queryFn: (message: CreateLobbyRes) => {
-                const ws = getSocket()
-
-                return new Promise((resolve) => {
-                    if (ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify(message))
-                        resolve({data: "message"})
-                    }
-                })
-            },
-        }),
         createLobby: builder.mutation<string, CreateLobbyRes>({
             queryFn: (message: CreateLobbyRes) => {
                 const ws = getSocket()
@@ -103,13 +91,21 @@ export const lobbyApi = createApi({
                 })
             },
         }),
-        joinGame: builder.mutation<string, MessageDTO>({
+        sendMessage: builder.mutation<string, MessageDTO>({
             queryFn: (message: MessageDTO) => {
                 const ws = getSocket()
+                console.log("sendMessage/ws",ws)
 
                 return new Promise((resolve) => {
-                    ws.send(JSON.stringify(message))
-                    resolve({data: "message"})
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify(message))
+                        resolve({data: "message"})
+                    } else {
+                        ws.addEventListener("open", () => {
+                            ws.send(JSON.stringify(message))
+                            resolve({data: "message"})
+                        })
+                    }
                 })
             },
         }),
@@ -154,6 +150,10 @@ export const lobbyApi = createApi({
                                 case LobbyEvents.START_SESSION:
                                     lifecycleApi.dispatch(setSession(res.data?.session))
                                     break;
+                                case LobbyEvents.JOIN_GAME:
+                                    draft.data = res.data?.lobby
+                                    lifecycleApi.dispatch(setSession(res.data?.session))
+                                    break;
                             }
                         })
                     }
@@ -195,5 +195,5 @@ export const {
     useJoinLobbyMutation,
     useChangeSettingsMutation,
     useStartGameMutation,
-    useJoinGameMutation,
+    useSendMessageMutation,
 } = lobbyApi

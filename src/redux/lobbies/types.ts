@@ -20,6 +20,8 @@ export type Session = {
     leader: UserDTO
     question: Question
     time: number
+    status: string
+    type: string
 }
 export type Round = {
     id: string
