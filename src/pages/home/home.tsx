@@ -1,4 +1,4 @@
-import {ComponentProps, FC, useEffect, useState} from "react";
+import {ComponentProps, FC, useEffect, useRef, useState} from "react";
 import {useAppSelector} from "../../redux/hooks.ts";
 import {useNavigate} from "react-router-dom";
 import {Box, Button, Tab, Tabs, TextField} from "@mui/material";
@@ -20,6 +20,8 @@ const Home: FC<HomePropsType> = ({}) => {
     const [createLobby,] = useCreateLobbyMutation()
     const [joinLobby, {isLoading: lobbyIsLoading}] = useJoinLobbyMutation()
     const [lobbyId, setLobbyId] = useState("")
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     console.log("data", message, status)
 
@@ -49,7 +51,16 @@ const Home: FC<HomePropsType> = ({}) => {
         joinLobby(dto)
     }
 
+    const togglePlayback = () => {
+        if (!audioRef.current) return;
 
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
 
     return (
         <div className={styles.container}>
@@ -70,6 +81,9 @@ const Home: FC<HomePropsType> = ({}) => {
                 >
                     Создать лобби
                 </Button>
+                <audio ref={audioRef} controls={true} autoPlay={true}>
+                    <source src="http://localhost:10000/song"  type="audio/mpeg"/>
+                </audio>
             </div>}
 
             {tab === "join" && <div className={styles.joinLobby}>
