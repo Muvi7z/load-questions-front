@@ -1,4 +1,4 @@
-import React, {ComponentProps, FC, useEffect, useState} from "react";
+import React, {ComponentProps, FC, useEffect, useRef, useState} from "react";
 import {
     JoinLobbyDTO,
     LobbyEvents,
@@ -103,6 +103,7 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
                     </div>
                 })}
             </div>
+
             <div className={styles.settings}>
                 <ThemeProvider theme={whiteTheme}>
                     <Box sx={{borderBottom: 1, borderColor: 'divider'}}>

@@ -21,6 +21,7 @@ const Session = () => {
     const [answer, setAnswer] = useState("")
     const [timer, setTimer] = useState<number>(0)
     const [timerStart, setTimerStart] = useState<number>(3)
+    const [isStartTimer, setIsStartTimer] = useState(false);
     const params = useParams()
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -55,7 +56,7 @@ const Session = () => {
     useEffect(() => {
         if (message?.data?.settings) {
             console.log("session?.status", session?.status)
-            if (session?.status === "start") {
+            if (session?.status === "start"  && !isStartTimer) {
                 console.log("start time session")
                 setTimer(timeGame)
                 startTimer()
@@ -98,7 +99,7 @@ const Session = () => {
     }, [timerStart]);
 
     function startTimer() {
-
+        setIsStartTimer(true)
         const interval = setInterval(() => {
             setTimer((prev, prop) => {
                 // console.log(prev)
