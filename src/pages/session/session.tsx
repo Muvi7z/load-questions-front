@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     LobbyEvents,
     useGetMessagesQuery, useSendMessageMutation,
@@ -16,12 +16,14 @@ const Session = () => {
     const [sendMessage,] = useSendMessageMutation()
 
     const {token} = useAppSelector(state => state.user)
-    const {session, timeGame} = useAppSelector(state => state.session)
+    const {session, timeGame, musicPosition} = useAppSelector(state => state.session)
 
     const [answer, setAnswer] = useState("")
     const [timer, setTimer] = useState<number>(0)
     const [timerStart, setTimerStart] = useState<number>(3)
     const params = useParams()
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
         let intervalStart: NodeJS.Timeout
@@ -29,19 +31,19 @@ const Session = () => {
 
         if (message?.data?.settings) {
             setTimer(message.data.settings.time)
-                if (session?.status === "wait") {
-                    intervalStart = setInterval(() => {
-                        setTimerStart((prev) => {
-                            if (prev-1 <=0) {
-                                clearInterval(intervalStart)
+            if (session?.status === "wait") {
+                intervalStart = setInterval(() => {
+                    setTimerStart((prev) => {
+                        if (prev - 1 <= 0) {
+                            clearInterval(intervalStart)
 
-                            }
-                            return prev - 1
+                        }
+                        return prev - 1
 
-                        });
+                    });
 
-                    }, 1000);
-                }
+                }, 1000);
+            }
         }
 
         return () => {
@@ -52,11 +54,15 @@ const Session = () => {
 
     useEffect(() => {
         if (message?.data?.settings) {
-            console.log("session?.status",session?.status)
+            console.log("session?.status", session?.status)
             if (session?.status === "start") {
                 console.log("start time session")
                 setTimer(timeGame)
                 startTimer()
+                if (audioRef.current) {
+                    console.log("audio",  musicPosition)
+                    audioRef.current.currentTime = musicPosition / 1000
+                }
             }
         }
 
@@ -79,7 +85,7 @@ const Session = () => {
     }, [token]);
 
     useEffect(() => {
-        if (timerStart <=0) {
+        if (timerStart <= 0) {
             console.log("start", timerStart)
             if (session?.status === "wait") {
                 if (message?.data?.settings) {
@@ -100,13 +106,23 @@ const Session = () => {
                     console.log(":end game")
                     clearInterval(interval)
                 }
-                    return prev - 1
+                return prev - 1
             });
 
         }, 1000);
 
     }
 
+    const togglePlayback = () => {
+        if (!audioRef.current) return;
+
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
 
     return (
         <div>
@@ -131,6 +147,9 @@ const Session = () => {
                     Создать лобби
                 </Button>
             </div>
+            <audio ref={audioRef} controls={true} autoPlay={true}>
+                <source src="http://192.168.1.30:10000/song" type="audio/mpeg"/>
+            </audio>
         </div>
     );
 };

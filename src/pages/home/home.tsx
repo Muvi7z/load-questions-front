@@ -20,8 +20,6 @@ const Home: FC<HomePropsType> = ({}) => {
     const [createLobby,] = useCreateLobbyMutation()
     const [joinLobby, {isLoading: lobbyIsLoading}] = useJoinLobbyMutation()
     const [lobbyId, setLobbyId] = useState("")
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
 
     console.log("data", message, status)
 
@@ -51,22 +49,13 @@ const Home: FC<HomePropsType> = ({}) => {
         joinLobby(dto)
     }
 
-    const togglePlayback = () => {
-        if (!audioRef.current) return;
 
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
-        }
-        setIsPlaying(!isPlaying);
-    };
 
     return (
         <div className={styles.container}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{
-                    userSelect:"none"
+                    userSelect: "none"
                 }} aria-label="basic tabs example">
                     <Tab label="Создать лобби" value="create"/>
                     <Tab label="Присоединится в лобби" value={"join"}/>
@@ -81,13 +70,12 @@ const Home: FC<HomePropsType> = ({}) => {
                 >
                     Создать лобби
                 </Button>
-                <audio ref={audioRef} controls={true} autoPlay={true}>
-                    <source src="http://localhost:10000/song"  type="audio/mpeg"/>
-                </audio>
+
             </div>}
 
             {tab === "join" && <div className={styles.joinLobby}>
-                <TextField  id="outlined-basic" label="Идентификатор лобби" variant="outlined" value={lobbyId} onChange={(event) => setLobbyId(event.target.value)}/>
+                <TextField id="outlined-basic" label="Идентификатор лобби" variant="outlined" value={lobbyId}
+                           onChange={(event) => setLobbyId(event.target.value)}/>
                 <Button
                     type="submit"
                     fullWidth

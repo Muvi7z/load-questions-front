@@ -30,6 +30,8 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
     const params = useParams()
     const [tab, setTab] = useState("game")
 
+    console.log("lobby", message)
+
     const whiteTheme = createTheme({
         palette: {
             mode: 'light',
@@ -80,6 +82,7 @@ const Lobby: FC<LobbyPropsType> = ({}) => {
 
     return (
         <div className={styles.wrapper}>
+            <div className={styles.lobbyTitle}>{message?.data?.id}</div>
             <div className={styles.list}>
                 {message?.data?.users?.map((item: UserDTO) => {
                     return <div className={styles.list_item}>

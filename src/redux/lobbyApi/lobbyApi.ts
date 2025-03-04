@@ -2,7 +2,10 @@ import { createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
 import { SettingsLobby} from "../lobbies/types.ts";
 import {CreateLobbyRes, JoinLobbyDTO, Message, MessageDTO, SessionStart} from "./types.ts";
 import {setSession} from "../session/sessionSlice.ts";
+import {config} from "typescript-eslint";
+import {BASE_URL} from "../../api/requests/config.ts";
 
+const WS_API = "ws://192.168.1.30:10000/ws"
 
 
 export enum LobbyEvents {
@@ -19,14 +22,14 @@ let socket: WebSocket
 function getSocket() {
     console.log("socket",socket)
     if(!socket) {
-        socket = new WebSocket("ws://localhost:10000/ws");
+        socket = new WebSocket(WS_API);
     }
     return socket;
 }
 
 export const lobbyApi = createApi({
     reducerPath: 'websocketApi',
-    baseQuery: fetchBaseQuery({baseUrl: "http://localhost:10000/"}),
+    baseQuery: fetchBaseQuery({baseUrl: BASE_URL}),
     endpoints: (builder) => ({
         createLobby: builder.mutation<string, CreateLobbyRes>({
             queryFn: (message: CreateLobbyRes) => {
@@ -151,6 +154,7 @@ export const lobbyApi = createApi({
                                     lifecycleApi.dispatch(setSession({
                                         session: res.data?.session,
                                         timeGame: 0,
+                                        musicPosition: 0
                                     }))
                                     break;
                                 case LobbyEvents.JOIN_GAME:
@@ -158,6 +162,7 @@ export const lobbyApi = createApi({
                                     lifecycleApi.dispatch(setSession({
                                         session: res.data?.session,
                                         timeGame: res.data?.timeGame,
+                                        musicPosition: res.data?.musicPosition,
                                     }))
                                     break;
                             }

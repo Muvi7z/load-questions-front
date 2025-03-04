@@ -4,6 +4,7 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 interface SessionState {
     session: Session | null
     timeGame: number
+    musicPosition: number
     status: string,
     error: string | null
 }
@@ -11,6 +12,7 @@ interface SessionState {
 const initialState: SessionState = {
     session: null,
     timeGame: 0,
+    musicPosition: 0,
     status: "idle",
     error: null
 }
@@ -18,6 +20,7 @@ const initialState: SessionState = {
 interface SetSessionPayloadType {
     session: Session | null
     timeGame: number
+    musicPosition: number
 }
 
 export const sessionSlice = createSlice({
@@ -28,6 +31,7 @@ export const sessionSlice = createSlice({
             console.log(action.payload, "action.payload")
             state.session = action.payload?.session
             state.timeGame = action.payload?.timeGame
+            state.musicPosition = action.payload?.musicPosition
         }
     },
 })
